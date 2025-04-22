@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        body.night-mode {
+            background-color: #333;
+            color: #f4f4f9;
+        }
+        h1 {
+            color: inherit;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            transition: background 0.3s;
+        }
+        body.night-mode .container {
+            background: #444;
+        }
+        input, button {
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .center-text {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .typing-test-container {
+            text-align: center;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+        }
+        .typing-test-text {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: left;
+            white-space: pre-wrap;
+        }
+        .typing-test-input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .typing-test-stats {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #555;
+        }
+        .correct {
+            color: green;
+        }
+        .incorrect {
+            color: red;
+        }
+        .timer {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #007BFF;
+        }
+        .typing-test-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button onclick="toggleNightMode()">Toggle Night Mode</button>
+        <h1>Welcome to the Generator Website</h1>
+        <p>Generate random data below:</p>
+
+        <h2>Generate Password</h2>
+        <label for="password-length">Password Length:</label>
+        <input type="number" id="password-length" placeholder="Enter length (default: 12)">
+        <button onclick="generatePassword()">Generate Password</button>
+        <p id="password-result"></p>
+
+        <h2>Generate Username</h2>
+        <label for="username-length">Username Length:</label>
+        <input type="number" id="username-length" placeholder="Enter length (default: 8)">
+        <button onclick="generateUsername()">Generate Username</button>
+        <p id="username-result"></p>
+
+        <h2>Generate Random Text</h2>
+        <div class="typing-test-container">
+            <h2>Typing Speed Test</h2>
+            <div id="text-result" class="typing-test-text">Click "Generate Random Text" to start.</div>
+            <div class="typing-test-buttons">
+                <button onclick="generateText()">Generate Random Text</button>
+                <button onclick="stopTest()">Stop</button>
+                <button onclick="resetTest()">Reset</button>
+            </div>
+            <div class="timer" id="timer">Time: 0s</div>
+            <textarea id="typing-area" class="typing-test-input" rows="5" placeholder="Type the generated text here..." oninput="verifyTyping()"></textarea>
+            <button onclick="calculateTypingSpeed()">Calculate Typing Speed</button>
+            <div id="typing-speed-result" class="typing-test-stats"></div>
+            <div id="score-result" class="typing-test-stats"></div>
+        </div>
+    </div>
+
+    <script>
+        let timerInterval;
+        let startTime;
+        let isTestRunning = false;
+
+        function toggleNightMode() {
+            document.body.classList.toggle('night-mode');
+        }
+
+        // Function to generate a random password
+        function generatePassword() {
+            const length = parseInt(document.getElementById('password-length').value) || 12;
+            const maxLength = 31;
+            const adjustedLength = Math.min(length, maxLength);
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
+            let password = '';
+            for (let i = 0; i < adjustedLength; i++) {
+                password += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            document.getElementById('password-result').innerText = `Generated Password: ${password}`;
+        }
+
+        // Function to generate a random username
+        function generateUsername() {
+            const length = parseInt(document.getElementById('username-length').value) || 8;
+            const maxLength = 15;
+            const adjustedLength = Math.min(length, maxLength);
+            const adjectives = ['Quick', 'Lazy', 'Happy', 'Sad', 'Bright', 'Dark'];
+            const nouns = ['Fox', 'Dog', 'Cat', 'Mouse', 'Bear', 'Wolf'];
+            let username = adjectives[Math.floor(Math.random() * adjectives.length)] + nouns[Math.floor(Math.random() * nouns.length)];
+            if (username.length < adjustedLength) {
+                username += Math.random().toString(36).substring(2, 2 + (adjustedLength - username.length));
+            }
+            document.getElementById('username-result').innerText = `Generated Username: ${username}`;
+        }
+
+        // Function to generate random text for typing speed tests
+        function generateText() {
+            const words = ["the", "quick", "brown", "fox", "jumps", "over", "the", "lazy", "dog"];
+            const text = Array.from({ length: 50 }, () => words[Math.floor(Math.random() * words.length)]).join(' ');
+            document.getElementById('text-result').innerText = text;
+        }
+
+        function startTimer() {
+            const timerElement = document.getElementById('timer');
+            startTime = new Date().getTime();
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const elapsedTime = Math.floor((new Date().getTime() - startTime) / 1000);
+                timerElement.innerText = `Time: ${elapsedTime}s`;
+            }, 1000);
+        }
+
+        function stopTest() {
+            clearInterval(timerInterval);
+            isTestRunning = false;
+        }
+
+        function resetTest() {
+            clearInterval(timerInterval);
+            document.getElementById('text-result').innerText = 'Click "Generate Random Text" to start.';
+            document.getElementById('typing-area').value = '';
+            document.getElementById('typing-speed-result').innerText = '';
+            document.getElementById('score-result').innerText = '';
+            document.getElementById('timer').innerText = 'Time: 0s';
+            isTestRunning = false;
+        }
+
+        function verifyTyping() {
+            if (!isTestRunning) return;
+
+            const generatedText = document.getElementById('text-result').innerText.split(' ');
+            const typedText = document.getElementById('typing-area').value.split(' ');
+            const highlightedText = generatedText.map((word, index) => {
+                if (typedText[index] === undefined) {
+                    return word;
+                } else if (typedText[index] === word) {
+                    return `<span class="correct">${word}</span>`;
+                } else {
+                    return `<span class="incorrect">${word}</span>`;
+                }
+            }).join(' ');
+            document.getElementById('text-result').innerHTML = highlightedText;
+        }
+
+        function calculateTypingSpeed() {
+            if (!isTestRunning) return;
+
+            clearInterval(timerInterval);
+            isTestRunning = false;
+
+            const textResult = document.getElementById('text-result').innerText;
+            const typingArea = document.getElementById('typing-area').value;
+            const startTime = parseInt(document.getElementById('text-result').dataset.startTime || 0);
+            const endTime = new Date().getTime();
+
+            if (!textResult || !typingArea) {
+                document.getElementById('typing-speed-result').innerText = 'Please generate text and type it to calculate speed.';
+                return;
+            }
+
+            const elapsedTime = (endTime - startTime) / 1000; // in seconds
+            const wordsTyped = typingArea.split(' ').length;
+            const wordsPerMinute = Math.round((wordsTyped / elapsedTime) * 60);
+
+            const generatedWords = textResult.split(' ');
+            const typedWords = typingArea.split(' ');
+            let correctWords = 0;
+
+            generatedWords.forEach((word, index) => {
+                if (typedWords[index] === word) {
+                    correctWords++;
+                }
+            });
+
+            const score = Math.round((correctWords / generatedWords.length) * 100);
+
+            document.getElementById('typing-speed-result').innerText = `Your typing speed is ${wordsPerMinute} words per minute.`;
+            document.getElementById('score-result').innerText = `Your accuracy score is ${score}%.`;
+        }
+    </script>
+</body>
+</html>
