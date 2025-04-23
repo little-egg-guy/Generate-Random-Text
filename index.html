@@ -179,7 +179,14 @@
         function generateText() {
             const words = ["the", "quick", "brown", "fox", "jumps", "over", "the", "lazy", "dog"];
             const text = Array.from({ length: 50 }, () => words[Math.floor(Math.random() * words.length)]).join(' ');
-            document.getElementById('text-result').innerText = text;
+            const textResult = document.getElementById('text-result');
+            textResult.innerText = text;
+            textResult.dataset.startTime = new Date().getTime();
+            document.getElementById('typing-area').value = '';
+            document.getElementById('typing-speed-result').innerText = '';
+            document.getElementById('score-result').innerText = '';
+            startTimer();
+            isTestRunning = true;
         }
 
         function startTimer() {
